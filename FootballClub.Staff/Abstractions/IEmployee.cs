@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BootcampDayOne
+namespace FootballClub.Staff.Controllers
 {
     public interface IEmployee
     {
@@ -14,7 +14,7 @@ namespace BootcampDayOne
 
         string Email { get; set; }
         
-        Guid Id { get; set; }
+        int Id { get; set; }
     
         DateTime StartedWorkingDate { get; set; }
 

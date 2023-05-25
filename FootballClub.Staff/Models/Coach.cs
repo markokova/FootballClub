@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BootcampDayOne
+namespace FootballClub.Staff.Controllers
 {
     internal class Coach : Employee
     {
-        public Coach(string firstName, string lastName, string email, DateTime startedWorkingDate, Address address,
+        public Coach(string firstName, string lastName, string email, int id, DateTime startedWorkingDate, Address address,
             double salary, int gamesWon = 0, int tiedGames = 0, int lostGames = 0)
-            : base(firstName, lastName, email, startedWorkingDate, address, salary)
+            : base(firstName, lastName, email, id, startedWorkingDate, address, salary)
         {
             GamesWon = gamesWon;
             TiedGames = tiedGames;

@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BootcampDayOne
+namespace FootballClub.Staff.Controllers
 {
     internal class Cook : Employee
     {
         public int YearlyOvertimeHours { get; set; }
-        public Cook(string firstName, string lastName, string email, DateTime startedWorkingDate, Address address,
-            double salary) : base(firstName, lastName, email, startedWorkingDate, address, salary)
+        public Cook(string firstName, string lastName, string email, int id, DateTime startedWorkingDate, Address address,
+            double salary) : base(firstName, lastName, email, id, startedWorkingDate, address, salary)
         {
 
         }

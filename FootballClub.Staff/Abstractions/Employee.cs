@@ -4,19 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BootcampDayOne
+namespace FootballClub.Staff.Controllers
 {
-    internal abstract class Employee: IEmployee
+    public abstract class Employee: IEmployee
     {
         public Employee()
         {
             
         }
-        public Employee(string firstName, string lastName, string email, DateTime startedWorkingDate, Address address, double salary) {
+        public Employee(string firstName, string lastName, string email, int id, DateTime startedWorkingDate, Address address, double salary) {
             FirstName = firstName;
             LastName = lastName;
             Email = email;
-            Id = Guid.NewGuid();
+            Id = id;
             StartedWorkingDate = startedWorkingDate;
             Address = address;
             Salary = salary;
@@ -28,7 +28,7 @@ namespace BootcampDayOne
 
         public string Email { get; set; }
 
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         public DateTime StartedWorkingDate { get; set; }
 

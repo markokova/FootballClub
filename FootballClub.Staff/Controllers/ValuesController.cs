@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 
 namespace FootballClub.Staff.Controllers
@@ -10,30 +11,49 @@ namespace FootballClub.Staff.Controllers
     public class ValuesController : ApiController
     {
         // GET api/values
+        private List<string> names;
+
+        public ValuesController()
+        {
+            names = new List<string>();
+        }
         public IEnumerable<string> Get()
         {
-            return new string[] { "value1", "value2" };
+            names = new List<string>() {"pero","Mato","josip" };
+            if (names == null)
+            {
+                return new List<string>();
+            }
+            return names;
         }
 
         // GET api/values/5
-        public string Get(int id)
+        public string Get(int index)
         {
-            return "value";
+            //return "ss";
+            return names[index];
         }
 
         // POST api/values
-        public void Post([FromBody] string value)
+        public string Post([FromBody] string value)
         {
+            if(value != null)
+            {
+                names.Add(value);
+            }
+            return value;
         }
 
         // PUT api/values/5
-        public void Put(int id, [FromBody] string value)
+        public void Put(int index, [FromBody] string value)
         {
+            names[index] = value;
         }
 
         // DELETE api/values/5
-        public void Delete(int id)
+        public void Delete(int index)
         {
+            names.RemoveAt(index);
         }
     }
 }

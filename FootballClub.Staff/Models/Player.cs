@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BootcampDayOne
+namespace FootballClub.Staff.Controllers
 {
     internal class Player : Employee
     {
@@ -13,9 +13,9 @@ namespace BootcampDayOne
         {
             
         }
-        public Player(string firstName, string lastName, string email, DateTime startedWorkingDate, Address address,
+        public Player(string firstName, string lastName, string email, int id, DateTime startedWorkingDate, Address address,
             double salary, int goalsScored = 0, int assistsMade = 0)
-            : base(firstName, lastName, email, startedWorkingDate, address, salary){
+            : base(firstName, lastName, email, id, startedWorkingDate, address, salary){
             GoalsScored = goalsScored;
             AssistsMade = assistsMade;
         }
