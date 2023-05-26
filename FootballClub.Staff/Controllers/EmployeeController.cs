@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
-
+using Npgsql;
 
 namespace FootballClub.Staff.Controllers
 {
@@ -14,20 +15,19 @@ namespace FootballClub.Staff.Controllers
 
 
         [HttpGet]
-        public IHttpActionResult GetEmployees()
+        public HttpResponseMessage GetEmployees()
         {
             
             if(employees.Count == 0)
             {
-                return NotFound();
+                return Request.CreateResponse(HttpStatusCode.NotFound);
             }
-            return Ok(employees);
+            return Request.CreateResponse(HttpStatusCode.OK, employees);
         }
 
         [HttpGet]
-        public IHttpActionResult GetEmployee(int id)
+        public HttpResponseMessage GetEmployee(int id)
         {
-            //this.CreateEmployees(5);
             Employee employee = null;
             foreach(Employee empl in employees)
             {
@@ -39,62 +39,47 @@ namespace FootballClub.Staff.Controllers
             }
             if (employee == null)
             {
-                return NotFound();
+                return Request.CreateResponse(HttpStatusCode.NotFound);
             }
-            return Ok(employee);
+            return Request.CreateResponse(HttpStatusCode.OK, employee);
         }
 
         [HttpPost]
-        public IHttpActionResult SaveNewEmployee([FromBody] Employee employee)
+        public HttpResponseMessage SaveNewEmployee([FromBody] Employee employee)
         {
-            //this.CreateEmployees(5);
             int id = employees.Max(e => e.Id);
             if (employee != null) {
                 employee.Id = id + 1;
                 employees.Add(employee);
-                return Ok(employee);
+                return Request.CreateResponse(HttpStatusCode.OK, employee);
             }
-            return NotFound();
+            return Request.CreateResponse(HttpStatusCode.NotFound, id);
         }
 
         [HttpPut]
-        public IHttpActionResult UpdateEmployee(int id, [FromBody] Employee employee)
+        public HttpResponseMessage UpdateEmployee(int id, double salary)
         {
-            int index = -1;
-            //this.CreateEmployees(5);
-            foreach(Employee emp in employees)
-            {
-                if(emp.Id == id)
-                {
-                    break; 
-                }
-                index++;
-            }
-            employees[index] = employee;
-            if (index < 0)
-            {
-                return NotFound();
-            }
-            return Ok(employees);
+            Employee employee = employees.Find(e => e.Id == id);
             
+            if(employee != null)
+            {
+                employee.Salary = salary;
+                return Request.CreateResponse(HttpStatusCode.OK, $"employee {employee.FirstName} new salary is {salary}");
+            }
+            return Request.CreateResponse(HttpStatusCode.NotFound, id);
         }
 
         [HttpDelete]
-        public IHttpActionResult DeleteEmployee(int id)
+        public HttpResponseMessage DeleteEmployee(int id)
         {
-            //this.CreateEmployees(3);
-            foreach (Employee empl in employees)
+            Employee employee = employees.Find(e => e.Id == id);
+            
+            if(employee != null)
             {
-                if(empl.Id == id)
-                {
-                    employees.Remove(empl);
-                    return Ok(employees);
-                }
+                employees.Remove(employee);
+                return Request.CreateResponse(HttpStatusCode.OK, $"Employee with {employee.Id} deleted.");
             }
-            return NotFound();
+            return Request.CreateResponse(HttpStatusCode.NotFound, id);
         }
-
-
-
     }
 }
