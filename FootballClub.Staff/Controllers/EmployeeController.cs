@@ -17,7 +17,7 @@ namespace FootballClub.Staff.Controllers
         public IHttpActionResult GetEmployees()
         {
             
-            if(employees == null)
+            if(employees.Count == 0)
             {
                 return NotFound();
             }
@@ -48,8 +48,9 @@ namespace FootballClub.Staff.Controllers
         public IHttpActionResult SaveNewEmployee([FromBody] Employee employee)
         {
             this.CreateEmployees(5);
-
+            int id = employees.Max(e => e.Id);
             if (employee != null) {
+                employee.Id = id + 1;
                 employees.Add(employee);
                 return Ok(employee);
             }
