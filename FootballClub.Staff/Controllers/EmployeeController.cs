@@ -27,7 +27,7 @@ namespace FootballClub.Staff.Controllers
         [HttpGet]
         public IHttpActionResult GetEmployee(int id)
         {
-            this.CreateEmployees(5);
+            //this.CreateEmployees(5);
             Employee employee = null;
             foreach(Employee empl in employees)
             {
@@ -47,7 +47,7 @@ namespace FootballClub.Staff.Controllers
         [HttpPost]
         public IHttpActionResult SaveNewEmployee([FromBody] Employee employee)
         {
-            this.CreateEmployees(5);
+            //this.CreateEmployees(5);
             int id = employees.Max(e => e.Id);
             if (employee != null) {
                 employee.Id = id + 1;
@@ -61,7 +61,7 @@ namespace FootballClub.Staff.Controllers
         public IHttpActionResult UpdateEmployee(int id, [FromBody] Employee employee)
         {
             int index = -1;
-            this.CreateEmployees(5);
+            //this.CreateEmployees(5);
             foreach(Employee emp in employees)
             {
                 if(emp.Id == id)
@@ -82,7 +82,7 @@ namespace FootballClub.Staff.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteEmployee(int id)
         {
-            this.CreateEmployees(3);
+            //this.CreateEmployees(3);
             foreach (Employee empl in employees)
             {
                 if(empl.Id == id)
@@ -94,15 +94,7 @@ namespace FootballClub.Staff.Controllers
             return NotFound();
         }
 
-        private void CreateEmployees(int employeesNumber)
-        {
-            for(int i = 0; i < employeesNumber; i++)
-            {
-                Address address = new Address("ads", "afds", "sa", 1);
-                Medic medic = new Medic("pero", "peric", "pero@gmail.com", i, DateTime.Now, address, 10000);
-                employees.Add(medic);
-            }
-        }
+
 
     }
 }
