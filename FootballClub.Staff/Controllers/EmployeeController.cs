@@ -10,17 +10,13 @@ namespace FootballClub.Staff.Controllers
 {
     public class EmployeeController : ApiController
     {
-        private List<Employee> employees;
+        private static List<Employee> employees = new List<Employee>();
 
-        public EmployeeController()
-        {
-                employees = new List<Employee>();
-        }
 
         [HttpGet]
         public IHttpActionResult GetEmployees()
         {
-            this.CreateEmployees(3);
+            
             if(employees == null)
             {
                 return NotFound();
@@ -31,7 +27,7 @@ namespace FootballClub.Staff.Controllers
         [HttpGet]
         public IHttpActionResult GetEmployee(int id)
         {
-            this.CreateEmployees(3);
+            this.CreateEmployees(5);
             Employee employee = null;
             foreach(Employee empl in employees)
             {
@@ -51,8 +47,10 @@ namespace FootballClub.Staff.Controllers
         [HttpPost]
         public IHttpActionResult SaveNewEmployee([FromBody] Employee employee)
         {
-            if(employee != null) {
-                this.employees.Add(employee);
+            this.CreateEmployees(5);
+
+            if (employee != null) {
+                employees.Add(employee);
                 return Ok(employee);
             }
             return NotFound();
@@ -62,6 +60,7 @@ namespace FootballClub.Staff.Controllers
         public IHttpActionResult UpdateEmployee(int id, [FromBody] Employee employee)
         {
             int index = -1;
+            this.CreateEmployees(5);
             foreach(Employee emp in employees)
             {
                 if(emp.Id == id)
@@ -75,7 +74,7 @@ namespace FootballClub.Staff.Controllers
             {
                 return NotFound();
             }
-            return Ok(this.employees);
+            return Ok(employees);
             
         }
 
@@ -88,7 +87,7 @@ namespace FootballClub.Staff.Controllers
                 if(empl.Id == id)
                 {
                     employees.Remove(empl);
-                    return Ok(this.employees);
+                    return Ok(employees);
                 }
             }
             return NotFound();
@@ -100,7 +99,7 @@ namespace FootballClub.Staff.Controllers
             {
                 Address address = new Address("ads", "afds", "sa", 1);
                 Medic medic = new Medic("pero", "peric", "pero@gmail.com", i, DateTime.Now, address, 10000);
-                this.employees.Add(medic);
+                employees.Add(medic);
             }
         }
 

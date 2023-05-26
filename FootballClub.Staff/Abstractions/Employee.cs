@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FootballClub.Staff.Controllers
 {
-    public abstract class Employee: IEmployee
+    public class Employee: IEmployee
     {
         public Employee()
         {
             
+        }
+        public Employee(int id, string firstName)
+        {
+            Id = id;
+            FirstName = firstName;
         }
         public Employee(string firstName, string lastName, string email, int id, DateTime startedWorkingDate, Address address, double salary) {
             FirstName = firstName;
@@ -21,9 +27,8 @@ namespace FootballClub.Staff.Controllers
             Address = address;
             Salary = salary;
         }
-
         public string FirstName { get; set; }
-
+        
         public string LastName { get; set; }
 
         public string Email { get; set; }
@@ -36,6 +41,7 @@ namespace FootballClub.Staff.Controllers
 
         public double Salary { get; set; }
 
+  
         public virtual int GetWorkExperience()
         {
             if (StartedWorkingDate != null)
