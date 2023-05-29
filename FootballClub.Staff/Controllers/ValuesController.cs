@@ -5,11 +5,15 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
+using System.Data.SqlClient;
+using Npgsql;
+using FootballClub.Staff.Database_Logic;
 
 namespace FootballClub.Staff.Controllers
 {
     public class ValuesController : ApiController
     {
+        private static DatabaseHandler databaseHandler = new DatabaseHandler();
         // GET api/values
         private List<string> names;
 
@@ -35,12 +39,10 @@ namespace FootballClub.Staff.Controllers
         }
 
         // POST api/values
-        public string Post([FromBody] string value)
+        public string Post(string value)
         {
-            if(value != null)
-            {
-                names.Add(value);
-            }
+            databaseHandler.InsertName(value);
+            names.Add(value);
             return value;
         }
 
