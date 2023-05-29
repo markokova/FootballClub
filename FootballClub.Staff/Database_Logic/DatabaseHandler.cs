@@ -34,7 +34,7 @@ namespace FootballClub.Staff.Database_Logic
             using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
-                string query = "SELECT Id FROM personnamesss ORDER BY Id DESC LIMIT 1;";
+                //string query = "SELECT Id FROM personnamesss ORDER BY Id DESC LIMIT 1;";
                 using (NpgsqlCommand command = connection.CreateCommand())
                 {
                     using(NpgsqlDataReader reader = command.ExecuteReader())
