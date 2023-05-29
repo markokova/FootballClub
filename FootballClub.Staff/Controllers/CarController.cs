@@ -22,7 +22,7 @@ namespace FootballClub.Staff.Controllers
             cars = handler.GetCars();
             if (cars.Count == 0)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return Request.CreateResponse(HttpStatusCode.NotFound, "There is no cars in the database.");
             }
             return Request.CreateResponse(HttpStatusCode.OK, cars);
         }
@@ -31,11 +31,12 @@ namespace FootballClub.Staff.Controllers
         public HttpResponseMessage GetCar(Guid id)
         {
             CarDBHandler handler = new CarDBHandler();
-            Car car = null;
-            car = handler.GetCar(id);
+
+            Car car = handler.GetCar(id);
+            
             if (car == null)
             {
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+                return Request.CreateResponse(HttpStatusCode.NotFound, $"There is no car with Id:{id} in the database.");
             }
             return Request.CreateResponse(HttpStatusCode.OK, car);
         }
@@ -44,21 +45,21 @@ namespace FootballClub.Staff.Controllers
         public HttpResponseMessage SaveNewCar([FromBody] Car car)
         {
             CarDBHandler handler = new CarDBHandler();
-            handler.InsertCar(car);
+            int affectedRows = handler.InsertCar(car);
 
-            if (car != null)
+            if (affectedRows > 0)
             {
                 return Request.CreateResponse(HttpStatusCode.OK, car);
             }
-            return Request.CreateResponse(HttpStatusCode.NotFound);
+            return Request.CreateResponse(HttpStatusCode.BadRequest, "Object isn't inserted.");
         }
 
         [HttpPut]
         public HttpResponseMessage UpdateCar(Guid id, [FromBody] Car car)
         {
             CarDBHandler handler = new CarDBHandler();
-            bool successful = handler.UpdateCar(id, car);
-            if (successful)
+            int affectedRows = handler.UpdateCar(id, car);
+            if (affectedRows > 0)
             {
                 
                 return Request.CreateResponse(HttpStatusCode.OK, id);
@@ -70,11 +71,11 @@ namespace FootballClub.Staff.Controllers
         public HttpResponseMessage DeleteCar(Guid id)
         {
             CarDBHandler handler = new CarDBHandler();
-            bool successful = handler.DeleteCar(id);
+            int affectedRows = handler.DeleteCar(id);
 
-            if (successful)
+            if (affectedRows > 0)
             {
-                return Request.CreateResponse(HttpStatusCode.OK, $"Car with {id} deleted.");
+                return Request.CreateResponse(HttpStatusCode.OK, $"Car with Id: {id} deleted.");
             }
             return Request.CreateResponse(HttpStatusCode.NotFound, id);
         }

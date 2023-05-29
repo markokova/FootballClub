@@ -14,12 +14,12 @@ namespace FootballClub.Staff.Database_Logic
 {
     public class CarDBHandler
     {
-        private string connectionString = "Server=localhost;Port=5432;Database=Rent_a_car;User Id=postgres;Password=password";
-        private string connString = ConfigurationManager.ConnectionStrings["MyConnectionString"].ConnectionString;
-        public void InsertCar(Car car)
+        private string connectionString = ConfigurationManager.ConnectionStrings["MyConnectionString"].ConnectionString;
+        public int InsertCar(Car car)
         {
             Guid id = Guid.NewGuid();
             car.Id = id;
+            int affectedRows = 0;
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -34,7 +34,7 @@ namespace FootballClub.Staff.Database_Logic
                         command.Parameters.AddWithValue("@Value3", car.Model);
                         command.Parameters.AddWithValue("@Value4", car.NumberOfSeats);
                         command.Parameters.AddWithValue("@Value5", car.Price);
-                        command.ExecuteNonQuery();
+                        affectedRows = command.ExecuteNonQuery();
                     }
                 }
             }
@@ -42,7 +42,7 @@ namespace FootballClub.Staff.Database_Logic
             {
                 Trace.WriteLine(ex.Message.ToString());
             }
-
+            return affectedRows;
         }
 
         public List<Car> GetCars()
@@ -84,9 +84,98 @@ namespace FootballClub.Staff.Database_Logic
         {
             return this.GetCarById(id);
         }
+       
+        public int UpdateCar(Guid id, Car newCar)
+        {
+            Car oldCar = this.GetCarById(id);
+            int affectedRows = 0;
+            StringBuilder builder = new StringBuilder("UPDATE \"Car\" SET ");
+
+            try
+            {
+                if (oldCar != null)
+                {
+                    using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        using (NpgsqlCommand command = new NpgsqlCommand())
+                        {
+                            if(!newCar.Manufacturer.IsEmpty())
+                            {
+                                builder.Append("\"Manufacturer\" = @ManufactureValue,");
+                                command.Parameters.AddWithValue("@ManufactureValue", newCar.Manufacturer);
+
+                            }
+                            if (!newCar.Model.IsEmpty())
+                            {
+                                builder.Append("\"Model\" = @ModelValue,");
+                                command.Parameters.AddWithValue("@ModelValue", newCar.Model);
+
+                            }
+                            if (newCar.NumberOfSeats != 0)
+                            {
+                                builder.Append("\"NumberOfSeats\" = @NumberOfSeatsValue,");
+                                command.Parameters.AddWithValue("@NumberOfSeatsValue", newCar.NumberOfSeats);
+                            }
+                            if (newCar.Price != 0)
+                            {
+                                builder.Append("\"Price\" = @PriceValue,");
+                                command.Parameters.AddWithValue("@PriceValue", newCar.Price);
+                            }
+                            if (builder.ToString().EndsWith(","))
+                            {
+                                if (builder.Length > 0)
+                                {
+                                    builder.Remove(builder.Length - 1, 1);
+                                }
+                            }
+                            builder.Append(" WHERE \"Id\" = @OldIdValue");
+                            string query = builder.ToString();
+                            command.Parameters.AddWithValue("@OldIdValue", oldCar.Id);
+                            command.CommandText = query;
+                            command.Connection = connection;
+                            affectedRows = command.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message.ToString());
+            }
+            return affectedRows;
+        }
+
+        public int DeleteCar(Guid id)
+        {
+            Car carToDelete = this.GetCarById(id);
+            int affectedRows = 0;
+            try
+            {
+                if (carToDelete != null)
+                {
+                    using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        string query = "DELETE FROM \"Car\" WHERE \"Id\" = @IdValue";
+                        using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@IdValue", id);
+                            affectedRows = command.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message.ToString());
+            }
+            return affectedRows;
+        }
+
         private Car GetCarById(Guid id)
         {
-            Car car = new Car();
+            Car car = null;
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -99,6 +188,7 @@ namespace FootballClub.Staff.Database_Logic
                         NpgsqlDataReader reader = command.ExecuteReader();
                         if (reader.HasRows)
                         {
+                            car = new Car();
                             reader.Read();
                             car.Id = (Guid)reader["Id"];
                             car.Manufacturer = (string)reader["Manufacturer"];
@@ -114,103 +204,6 @@ namespace FootballClub.Staff.Database_Logic
                 Trace.WriteLine(ex.Message.ToString());
             }
             return car;
-        }
-        
-        public bool UpdateCar(Guid id, Car newCar)
-        {
-            Car oldCar = this.GetCarById(id);
-            string manufacture = string.Empty;
-            string model = string.Empty;
-            int numberOfSeats = 0;
-            double price = 0;
-
-            StringBuilder builder = new StringBuilder("UPDATE \"Car\" SET ");
-
-            try
-            {
-                if (oldCar != null)
-                {
-                    using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
-                    {
-                        connection.Open();
-                        using (NpgsqlCommand command = new NpgsqlCommand())
-                        {
-                            if(!newCar.Manufacturer.IsEmpty())
-                            {
-                                builder.Append("\"Manufacturer\" = @ManufactureValue,");
-                                manufacture = newCar.Manufacturer;
-                                command.Parameters.AddWithValue("@ManufactureValue", manufacture);
-
-                            }
-                            if (!newCar.Model.IsEmpty())
-                            {
-                                builder.Append("\"Model\" = @ModelValue,");
-                                model = newCar.Model;
-                                command.Parameters.AddWithValue("@ModelValue", model);
-
-                            }
-                            if (newCar.NumberOfSeats != 0)
-                            {
-                                builder.Append("\"NumberOfSeats\" = @NumberOfSeatsValue,");
-                                numberOfSeats = newCar.NumberOfSeats;
-                                command.Parameters.AddWithValue("@NumberOfSeatsValue", numberOfSeats);
-                            }
-                            if (newCar.Price != 0)
-                            {
-                                builder.Append("\"Price\" = @PriceValue,");
-                                price = newCar.Price;
-                                command.Parameters.AddWithValue("@PriceValue", price);
-                            }
-                            if (builder.ToString().EndsWith(","))
-                            {
-                                if (builder.Length > 0)
-                                {
-                                    builder.Remove(builder.Length - 1, 1);
-                                }
-                            }
-                            builder.Append(" WHERE \"Id\" = @OldIdValue");
-                            string query = builder.ToString();
-                            command.Parameters.AddWithValue("@OldIdValue", oldCar.Id);
-                            command.CommandText = query;
-                            command.Connection = connection;
-                            command.ExecuteNonQuery();
-                            return true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message.ToString());
-            }
-            return false;
-        }
-
-        public bool DeleteCar(Guid id)
-        {
-            Car carToDelete = this.GetCarById(id);
-            try
-            {
-                if (carToDelete != null)
-                {
-                    using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
-                    {
-                        connection.Open();
-                        string query = "DELETE FROM \"Car\" WHERE \"Id\" = @IdValue";
-                        using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
-                        {
-                            command.Parameters.AddWithValue("@IdValue", id);
-                            command.ExecuteNonQuery();
-                            return true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message.ToString());
-            }
-            return false;
         }
     }
 }
