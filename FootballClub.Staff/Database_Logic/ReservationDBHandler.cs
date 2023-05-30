@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
+using System.Net.Http;
+using System.Web.Http;
+using System.Net;
 
 namespace FootballClub.Staff.Database_Logic
 {
@@ -42,15 +45,21 @@ namespace FootballClub.Staff.Database_Logic
             return affectedRows;
         }
 
-        public List<Reservation> GetReservations()
+        public List<Dictionary<string,string>> GetReservations()
         {
-            List<Reservation> Reservations = new List<Reservation>();
+            Reservation reservation = null; Car car = null; Person person = null;
+            List<Dictionary<string,string>> reservations = new List<Dictionary<string,string>>();
+
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT * FROM \"Reservation\"";
+                    //string query = "SELECT * FROM \"Reservation\"";
+                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\", c.\"Model\", c.\"NumberOfSeats\", c.\"Price\", p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
+                        "FROM \"Reservation\" r " +
+                        "INNER JOIN \"Car\" c ON r.\"CarId\" = c.\"Id\" " +
+                        "INNER JOIN \"Person\" p ON r.\"PersonId\" = p.\"Id\"";
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
                         NpgsqlDataReader reader = command.ExecuteReader();
@@ -58,12 +67,22 @@ namespace FootballClub.Staff.Database_Logic
                         {
                             while (reader.Read())
                             {
-                                Reservation Reservation = new Reservation();
-                                Reservation.Id = (Guid)reader["Id"];
-                                Reservation.ReservationDate = (DateTime)reader["ReservationDate"];
-                                Reservation.CarId = (Guid)reader["CarId"];
-                                Reservation.PersonId = (Guid)reader["PersonId"];
-                                Reservations.Add(Reservation);
+                                reservation = new Reservation(); car = new Car(); person = new Person();
+                                reservation.Id = (Guid)reader["ReservationId"];
+                                reservation.ReservationDate = (DateTime)reader["ReservationDate"];
+                                reservation.CarId = (Guid)reader["CarId"];
+                                car.Manufacturer = (string)reader["Manufacturer"];
+                                car.Model = (string)reader["Model"];
+                                car.NumberOfSeats = (int)reader["NumberOfSeats"];
+                                car.Price = (double)reader["Price"];
+                                person.FirstName = (string)reader["FirstName"];
+                                person.LastName = (string)reader["LastName"];
+                                person.Email = (string)reader["Email"];
+                                Dictionary<string, string> dictionary = ToDictionary((reservation, car, person));
+                                if(dictionary != null)
+                                {
+                                    reservations.Add(dictionary);
+                                }
                             }
                         }
                     }
@@ -73,12 +92,57 @@ namespace FootballClub.Staff.Database_Logic
             {
                 Trace.WriteLine(ex.Message.ToString());
             }
-            return Reservations;
+            return reservations;
         }
 
-        public Reservation GetReservation(Guid id)
+        //TODO - Is it better to return Dictionary<string,string> as I return here (although there are integers and doubles in car data) or to return
+        //a Tuple (Reservation, Car, Person) response and then in the controller get method return this:
+        //return Request.CreateResponse(HttpStatusCode.OK, new {Reservation = response.reservation, Car = response.car, Person = response.person});
+        //or there is another way to fetch attributes of multilpe objects and return them
+
+        public Dictionary<string, string> GetReservation(Guid id)
         {
-            return this.GetReservationById(id);
+            Reservation reservation = null; Car car = null; Person person = null;
+            try
+            {
+                using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\",c.\"Model\",c.\"NumberOfSeats\", c.\"Price\", p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
+                        "FROM \"Reservation\" r " +
+                        "INNER JOIN \"Car\" c ON r.\"CarId\" = c.\"Id\" " +
+                        "INNER JOIN \"Person\" p ON r.\"PersonId\" = p.\"Id\" " +
+                        "WHERE r.\"Id\" =@ReservationId";
+                    //string query = "SELECT * FROM \"Reservation\" WHERE \"Id\" = @ReservationId";
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@ReservationId", id);
+                        NpgsqlDataReader reader = command.ExecuteReader();
+                        if (reader.HasRows)
+                        {
+                            reservation = new Reservation(); car = new Car(); person = new Person();
+                            reader.Read();
+                            reservation.Id = (Guid)reader["ReservationId"];
+                            reservation.ReservationDate = (DateTime)reader["ReservationDate"];
+                            car.Manufacturer = (string)reader["Manufacturer"];
+                            car.Model = (string)reader["Model"];
+                            car.NumberOfSeats = (int)reader["NumberOfSeats"];
+                            car.Price = (double)reader["Price"];
+                            person.FirstName = (string)reader["FirstName"];
+                            person.LastName = (string)reader["LastName"];
+                            person.Email = (string)reader["Email"];
+                            reservation.CarId = (Guid)reader["CarId"];
+                            reservation.PersonId = (Guid)reader["PersonId"];
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message.ToString());
+            }
+            Dictionary<string, string> response = ToDictionary((reservation, car, person));
+            return response;
         }
 
         public int UpdateReservation(Guid id, Reservation newReservation)
@@ -164,27 +228,28 @@ namespace FootballClub.Staff.Database_Logic
             return affectedRows;
         }
 
+
         private Reservation GetReservationById(Guid id)
         {
-            Reservation Reservation = null;
+            Reservation reservation = null;
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT * FROM \"Reservation\" WHERE \"Id\" = @Value";
+                    string query = "SELECT * FROM \"Reservation\" WHERE \"Id\" = @ReservationId";
                     using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Value", id);
+                        command.Parameters.AddWithValue("@ReservationId", id);
                         NpgsqlDataReader reader = command.ExecuteReader();
                         if (reader.HasRows)
                         {
-                            Reservation = new Reservation();
+                            reservation = new Reservation();
                             reader.Read();
-                            Reservation.Id = (Guid)reader["Id"];
-                            Reservation.ReservationDate = (DateTime)reader["ReservationDate"];
-                            Reservation.CarId = (Guid)reader["CarId"];
-                            Reservation.PersonId = (Guid)reader["PersonId"];
+                            reservation.Id = (Guid)reader["Id"];
+                            reservation.ReservationDate = (DateTime)reader["ReservationDate"];
+                            reservation.CarId = (Guid)reader["CarId"];
+                            reservation.PersonId = (Guid)reader["PersonId"];
                         }
                     }
                 }
@@ -193,7 +258,29 @@ namespace FootballClub.Staff.Database_Logic
             {
                 Trace.WriteLine(ex.Message.ToString());
             }
-            return Reservation;
+            return reservation;
+        }
+
+        private Dictionary<string, string> ToDictionary((Reservation reservation, Car car, Person person) responseTuple)
+        {
+            if (responseTuple.reservation != null)
+            {
+                Dictionary<string, string> response = new Dictionary<string, string>()
+                {
+                    {"Reservation Id", responseTuple.reservation.Id.ToString()},
+                    {"Reservation Date", responseTuple.reservation.ReservationDate.ToString()},
+                    {"Car Manufacturer",responseTuple.car.Manufacturer },
+                    {"Car Model", responseTuple.car.Model },
+                    {"Car number of seats",responseTuple.car.NumberOfSeats.ToString() },
+                    {"Price [€]", responseTuple.car.Price.ToString() },
+                    {"First Name", responseTuple.person.FirstName },
+                    {"Last Name", responseTuple.person.LastName },
+                    {"Email", responseTuple.person.Email },
+
+                };
+                return response;
+            }
+            return null;
         }
     }
 }

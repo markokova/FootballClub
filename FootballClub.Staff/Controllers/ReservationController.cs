@@ -16,13 +16,13 @@ namespace FootballClub.Staff.Controllers
         public HttpResponseMessage GetReservations()
         {
             ReservationDBHandler handler = new ReservationDBHandler();
-            List<Reservation> Reservations = new List<Reservation>();
-            Reservations = handler.GetReservations();
-            if (Reservations.Count == 0)
+            List<Dictionary<string,string>> reservations = new List<Dictionary<string,string>>();
+            reservations = handler.GetReservations();
+            if (reservations.Count == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "There is no Reservations in the database.");
             }
-            return Request.CreateResponse(HttpStatusCode.OK, Reservations);
+            return Request.CreateResponse(HttpStatusCode.OK, reservations);
         }
 
         [HttpGet]
@@ -30,13 +30,14 @@ namespace FootballClub.Staff.Controllers
         {
             ReservationDBHandler handler = new ReservationDBHandler();
 
-            Reservation Reservation = handler.GetReservation(id);
-
-            if (Reservation == null)
+            Dictionary<string, string> response = handler.GetReservation(id);
+            
+           
+            if (response == null)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, $"There is no Reservation with Id:{id} in the database.");
             }
-            return Request.CreateResponse(HttpStatusCode.OK, Reservation);
+            return Request.CreateResponse(HttpStatusCode.OK, response);
         }
 
         [HttpPost]
