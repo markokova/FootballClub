@@ -10,8 +10,9 @@ using System.Web;
 using System.Net.Http;
 using System.Web.Http;
 using System.Net;
+using FootballClub.Staff.Database_Logic.Responses;
 
-namespace FootballClub.Staff.Database_Logic
+namespace FootballClub.Staff.Database_Logic.DBHandlers
 {
     public class ReservationDBHandler
     {
@@ -45,10 +46,10 @@ namespace FootballClub.Staff.Database_Logic
             return affectedRows;
         }
 
-        public List<Dictionary<string,string>> GetReservations()
+        public List<ReservationResponse> GetReservations()
         {
             Reservation reservation = null; Car car = null; Person person = null;
-            List<Dictionary<string,string>> reservations = new List<Dictionary<string,string>>();
+            List<ReservationResponse> responses = new List<ReservationResponse>();
 
             try
             {
@@ -56,7 +57,7 @@ namespace FootballClub.Staff.Database_Logic
                 {
                     connection.Open();
                     //string query = "SELECT * FROM \"Reservation\"";
-                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\", c.\"Model\", c.\"NumberOfSeats\", c.\"Price\", p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
+                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\", c.\"Model\", c.\"NumberOfSeats\", c.\"Price\", p.\"Id\" AS PersonId, p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
                         "FROM \"Reservation\" r " +
                         "INNER JOIN \"Car\" c ON r.\"CarId\" = c.\"Id\" " +
                         "INNER JOIN \"Person\" p ON r.\"PersonId\" = p.\"Id\"";
@@ -71,17 +72,22 @@ namespace FootballClub.Staff.Database_Logic
                                 reservation.Id = (Guid)reader["ReservationId"];
                                 reservation.ReservationDate = (DateTime)reader["ReservationDate"];
                                 reservation.CarId = (Guid)reader["CarId"];
+                                reservation.PersonId = (Guid)reader["PersonId"];
+                                car.Id = (Guid)reader["CarId"];
                                 car.Manufacturer = (string)reader["Manufacturer"];
                                 car.Model = (string)reader["Model"];
                                 car.NumberOfSeats = (int)reader["NumberOfSeats"];
                                 car.Price = (double)reader["Price"];
+                                person.Id = (Guid)reader["PersonId"];
                                 person.FirstName = (string)reader["FirstName"];
                                 person.LastName = (string)reader["LastName"];
                                 person.Email = (string)reader["Email"];
-                                Dictionary<string, string> dictionary = ToDictionary((reservation, car, person));
-                                if(dictionary != null)
-                                {
-                                    reservations.Add(dictionary);
+                                
+                                ReservationResponse response = new ReservationResponse();
+                                response.reservation = reservation; response.car = car; response.person = person;
+                                if(response.reservation.Id != Guid.Empty)
+                                { 
+                                    responses.Add(response);
                                 }
                             }
                         }
@@ -92,7 +98,7 @@ namespace FootballClub.Staff.Database_Logic
             {
                 Trace.WriteLine(ex.Message.ToString());
             }
-            return reservations;
+            return responses;
         }
 
         //TODO - Is it better to return Dictionary<string,string> as I return here (although there are integers and doubles in car data) or to return
@@ -100,15 +106,16 @@ namespace FootballClub.Staff.Database_Logic
         //return Request.CreateResponse(HttpStatusCode.OK, new {Reservation = response.reservation, Car = response.car, Person = response.person});
         //or there is another way to fetch attributes of multilpe objects and return them
 
-        public Dictionary<string, string> GetReservation(Guid id)
+        public ReservationResponse GetReservation(Guid id)
         {
             Reservation reservation = null; Car car = null; Person person = null;
+            ReservationResponse response = new ReservationResponse();
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
-                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\",c.\"Model\",c.\"NumberOfSeats\", c.\"Price\", p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
+                    string query = "SELECT r.\"Id\" AS ReservationId, r.\"ReservationDate\", c.\"Id\" AS CarId, c.\"Manufacturer\",c.\"Model\",c.\"NumberOfSeats\", c.\"Price\", p.\"Id\" AS PersonId, p.\"FirstName\", p.\"LastName\", p.\"Email\" " +
                         "FROM \"Reservation\" r " +
                         "INNER JOIN \"Car\" c ON r.\"CarId\" = c.\"Id\" " +
                         "INNER JOIN \"Person\" p ON r.\"PersonId\" = p.\"Id\" " +
@@ -124,15 +131,20 @@ namespace FootballClub.Staff.Database_Logic
                             reader.Read();
                             reservation.Id = (Guid)reader["ReservationId"];
                             reservation.ReservationDate = (DateTime)reader["ReservationDate"];
+                            car.Id = (Guid)reader["CarId"];
                             car.Manufacturer = (string)reader["Manufacturer"];
                             car.Model = (string)reader["Model"];
                             car.NumberOfSeats = (int)reader["NumberOfSeats"];
                             car.Price = (double)reader["Price"];
+                            person.Id = (Guid)reader["PersonId"];
                             person.FirstName = (string)reader["FirstName"];
                             person.LastName = (string)reader["LastName"];
                             person.Email = (string)reader["Email"];
                             reservation.CarId = (Guid)reader["CarId"];
                             reservation.PersonId = (Guid)reader["PersonId"];
+                            response.reservation = reservation;
+                            response.car = car;
+                            response.person = person;
                         }
                     }
                 }
@@ -141,7 +153,6 @@ namespace FootballClub.Staff.Database_Logic
             {
                 Trace.WriteLine(ex.Message.ToString());
             }
-            Dictionary<string, string> response = ToDictionary((reservation, car, person));
             return response;
         }
 
@@ -261,26 +272,26 @@ namespace FootballClub.Staff.Database_Logic
             return reservation;
         }
 
-        private Dictionary<string, string> ToDictionary((Reservation reservation, Car car, Person person) responseTuple)
-        {
-            if (responseTuple.reservation != null)
-            {
-                Dictionary<string, string> response = new Dictionary<string, string>()
-                {
-                    {"Reservation Id", responseTuple.reservation.Id.ToString()},
-                    {"Reservation Date", responseTuple.reservation.ReservationDate.ToString()},
-                    {"Car Manufacturer",responseTuple.car.Manufacturer },
-                    {"Car Model", responseTuple.car.Model },
-                    {"Car number of seats",responseTuple.car.NumberOfSeats.ToString() },
-                    {"Price [€]", responseTuple.car.Price.ToString() },
-                    {"First Name", responseTuple.person.FirstName },
-                    {"Last Name", responseTuple.person.LastName },
-                    {"Email", responseTuple.person.Email },
+        //private Dictionary<string, string> ToDictionary((Reservation reservation, Car car, Person person) responseTuple)
+        //{
+        //    if (responseTuple.reservation != null)
+        //    {
+        //        Dictionary<string, string> response = new Dictionary<string, string>()
+        //        {
+        //            {"Reservation Id", responseTuple.reservation.Id.ToString()},
+        //            {"Reservation Date", responseTuple.reservation.ReservationDate.ToString()},
+        //            {"Car Manufacturer",responseTuple.car.Manufacturer },
+        //            {"Car Model", responseTuple.car.Model },
+        //            {"Car number of seats",responseTuple.car.NumberOfSeats.ToString() },
+        //            {"Price [€]", responseTuple.car.Price.ToString() },
+        //            {"First Name", responseTuple.person.FirstName },
+        //            {"Last Name", responseTuple.person.LastName },
+        //            {"Email", responseTuple.person.Email },
 
-                };
-                return response;
-            }
-            return null;
-        }
+        //        };
+        //        return response;
+        //    }
+        //    return null;
+        //}
     }
 }

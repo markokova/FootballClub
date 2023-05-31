@@ -5,7 +5,7 @@ using System.Web;
 using System.Xml.Linq;
 using Npgsql;
 
-namespace FootballClub.Staff.Database_Logic
+namespace FootballClub.Staff.Database_Logic.DBHandlers
 {
     public class DatabaseHandler
     {

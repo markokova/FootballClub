@@ -1,4 +1,4 @@
-﻿using FootballClub.Staff.Database_Logic;
+﻿using FootballClub.Staff.Database_Logic.DBHandlers;
 using FootballClub.Staff.Models;
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net;
 using System.Web;
 using System.Web.Http;
+using FootballClub.Staff.Database_Logic.Responses;
 
 namespace FootballClub.Staff.Controllers
 {
@@ -16,13 +17,12 @@ namespace FootballClub.Staff.Controllers
         public HttpResponseMessage GetReservations()
         {
             ReservationDBHandler handler = new ReservationDBHandler();
-            List<Dictionary<string,string>> reservations = new List<Dictionary<string,string>>();
-            reservations = handler.GetReservations();
-            if (reservations.Count == 0)
+            List<ReservationResponse> responses = handler.GetReservations();
+            if (responses.Count == 0)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, "There is no Reservations in the database.");
             }
-            return Request.CreateResponse(HttpStatusCode.OK, reservations);
+            return Request.CreateResponse(HttpStatusCode.OK, responses);
         }
 
         [HttpGet]
@@ -30,10 +30,9 @@ namespace FootballClub.Staff.Controllers
         {
             ReservationDBHandler handler = new ReservationDBHandler();
 
-            Dictionary<string, string> response = handler.GetReservation(id);
+            ReservationResponse response = handler.GetReservation(id);
             
-           
-            if (response == null)
+            if (response.reservation.Id == Guid.Empty)
             {
                 return Request.CreateResponse(HttpStatusCode.NotFound, $"There is no Reservation with Id:{id} in the database.");
             }

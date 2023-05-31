@@ -209,10 +209,11 @@
     <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\ReservationController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
-    <Compile Include="Database_Logic\CarDBHandler.cs" />
-    <Compile Include="Database_Logic\DatabaseHandler.cs" />
-    <Compile Include="Database_Logic\PersonDBHandler.cs" />
-    <Compile Include="Database_Logic\ReservationDBHandler.cs" />
+    <Compile Include="Database_Logic\DBHandlers\CarDBHandler.cs" />
+    <Compile Include="Database_Logic\DBHandlers\DatabaseHandler.cs" />
+    <Compile Include="Database_Logic\DBHandlers\PersonDBHandler.cs" />
+    <Compile Include="Database_Logic\DBHandlers\ReservationDBHandler.cs" />
+    <Compile Include="Database_Logic\Responses\ReservationResponse.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

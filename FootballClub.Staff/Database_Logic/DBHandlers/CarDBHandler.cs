@@ -10,7 +10,7 @@ using System.Web.WebPages;
 using System.Text;
 using System.Configuration;
 
-namespace FootballClub.Staff.Database_Logic
+namespace FootballClub.Staff.Database_Logic.DBHandlers
 {
     public class CarDBHandler
     {

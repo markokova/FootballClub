@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Web.Http;
 using System.Data.SqlClient;
 using Npgsql;
-using FootballClub.Staff.Database_Logic;
+using FootballClub.Staff.Database_Logic.DBHandlers;
 
 namespace FootballClub.Staff.Controllers
 {

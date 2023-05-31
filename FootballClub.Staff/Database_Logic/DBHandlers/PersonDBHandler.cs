@@ -9,7 +9,7 @@ using System.Text;
 using System.Web;
 using System.Web.WebPages;
 
-namespace FootballClub.Staff.Database_Logic
+namespace FootballClub.Staff.Database_Logic.DBHandlers
 {
     public class PersonDBHandler
     {
