@@ -41,6 +41,20 @@ namespace FootballClub.Staff.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, car);
         }
 
+        [HttpGet]
+        public HttpResponseMessage GetCarByPrice(double price)
+        {
+            CarDBHandler handler = new CarDBHandler();
+            List<Car> cars = handler.GetCarByPrice(price);
+            
+            if(cars.Count == 0 )
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "There are no cars this cheap.");
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, cars);
+        }
+
         [HttpPost]
         public HttpResponseMessage SaveNewCar([FromBody] Car car)
         {

@@ -24,7 +24,6 @@ namespace FootballClub.Staff.Controllers
             }
             return Request.CreateResponse(HttpStatusCode.OK, responses);
         }
-
         [HttpGet]
         public HttpResponseMessage GetReservation(Guid id)
         {

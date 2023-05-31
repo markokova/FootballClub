@@ -85,6 +85,42 @@ namespace FootballClub.Staff.Database_Logic.DBHandlers
             return this.GetCarById(id);
         }
        
+        public List<Car> GetCarByPrice(double price)
+        {
+            List<Car> cars = new List<Car>();
+            try
+            {
+                using(NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+                {
+                    connection.Open();
+                    string query = "select * from \"Car\" where \"Car\".\"Price\" < @Price";
+                    using(NpgsqlCommand command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("Price", price);
+                        NpgsqlDataReader reader = command.ExecuteReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                Car car = new Car();
+                                car.Id = (Guid)reader["Id"];
+                                car.Manufacturer = (string)reader["Manufacturer"];
+                                car.Model = (string)reader["Model"];
+                                car.NumberOfSeats = (int)reader["NumberOfSeats"];
+                                car.Price = (double)reader["Price"];
+                                cars.Add(car);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message.ToString());
+            }
+            return cars;
+        }
+
         public int UpdateCar(Guid id, Car newCar)
         {
             Car oldCar = this.GetCarById(id);
